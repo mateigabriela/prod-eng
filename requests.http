@@ -98,3 +98,102 @@ DELETE http://localhost:8080/api/todos/{{createTodo.response.body.id}}
 
 ### Delete user
 DELETE http://localhost:8080/api/users/{{createUser.response.body.id}}
+
+
+# ==========================================
+# Auto Service Endpoints
+# ==========================================
+
+### Create client
+# @name createClient
+POST http://localhost:8080/api/clients
+Content-Type: application/json
+
+{
+    "firstName": "Mihai",
+    "lastName": "Ionescu",
+    "phone": "0722111222",
+    "email": "mihai.ionesu@example.com",
+    "address": "Bucuresti, Sector 1"
+}
+
+### Create car
+# @name createCar
+POST http://localhost:8080/api/cars
+Content-Type: application/json
+
+{
+    "brand": "Dacia",
+    "model": "Duster",
+    "fabricationYear": 2021,
+    "plateNumber": "B-42-XYZ",
+    "clientId": "{{createClient.response.body.id}}"
+}
+
+### Create mechanic
+# @name createMechanic
+POST http://localhost:8080/api/mechanics
+Content-Type: application/json
+
+{
+    "firstName": "Andrei",
+    "lastName": "Pop",
+    "phone": "0733222111"
+}
+
+### Create supplier
+# @name createSupplier
+POST http://localhost:8080/api/suppliers
+Content-Type: application/json
+
+{
+    "name": "Auto Parts Distribution",
+    "address": "Bd. Timisoara 8, Bucuresti",
+    "phone": "0215552233"
+}
+
+### Create part
+# @name createPart
+POST http://localhost:8080/api/parts
+Content-Type: application/json
+
+{
+    "name": "Filtru ulei",
+    "availableStock": 20,
+    "unitPrice": 45.0,
+    "supplierId": "{{createSupplier.response.body.id}}"
+}
+
+### Create service order
+# @name createOrder
+POST http://localhost:8080/api/service-orders
+Content-Type: application/json
+
+{
+    "carId": "{{createCar.response.body.id}}",
+    "mechanicId": "{{createMechanic.response.body.id}}",
+    "serviceName": "Revizie completa",
+    "description": "Schimb ulei si filtru",
+    "laborCost": 200.0,
+    "scheduledAt": "2026-03-05T10:00:00",
+    "requiredParts": [
+        {
+            "partId": "{{createPart.response.body.id}}",
+            "quantity": 2
+        }
+    ]
+}
+
+### Complete service order
+PATCH http://localhost:8080/api/service-orders/{{createOrder.response.body.id}}/complete
+
+### Receive delivery for part stock refill
+PATCH http://localhost:8080/api/deliveries/receive
+Content-Type: application/json
+
+{
+    "partId": "{{createPart.response.body.id}}",
+    "supplierId": "{{createSupplier.response.body.id}}",
+    "quantity": 15,
+    "deliveredAt": "2026-03-05T08:30:00"
+}

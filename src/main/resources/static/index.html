@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Service Ops</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="background-shape bg-one"></div>
+<div class="background-shape bg-two"></div>
+
+<header class="hero">
+    <p class="eyebrow">Auto Service SaaS</p>
+    <h1>Control center for workshop operations</h1>
+    <p class="lead">Manage clients, vehicles, parts inventory, and service orders from one interface.</p>
+</header>
+
+<main class="layout">
+    <section class="card">
+        <h2>Client</h2>
+        <form id="client-form">
+            <input name="firstName" placeholder="First name" required>
+            <input name="lastName" placeholder="Last name" required>
+            <input name="phone" placeholder="Phone" required>
+            <input name="email" type="email" placeholder="Email" required>
+            <input name="address" placeholder="Address" required>
+            <button type="submit">Create Client</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Car</h2>
+        <form id="car-form">
+            <input name="brand" placeholder="Brand" required>
+            <input name="model" placeholder="Model" required>
+            <input name="fabricationYear" type="number" placeholder="Fabrication year" required>
+            <input name="plateNumber" placeholder="Plate number" required>
+            <select name="clientId" id="client-select" required></select>
+            <button type="submit">Create Car</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Mechanic</h2>
+        <form id="mechanic-form">
+            <input name="firstName" placeholder="First name" required>
+            <input name="lastName" placeholder="Last name" required>
+            <input name="phone" placeholder="Phone" required>
+            <button type="submit">Create Mechanic</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Supplier</h2>
+        <form id="supplier-form">
+            <input name="name" placeholder="Supplier name" required>
+            <input name="address" placeholder="Address" required>
+            <input name="phone" placeholder="Phone" required>
+            <button type="submit">Create Supplier</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Part</h2>
+        <form id="part-form">
+            <input name="name" placeholder="Part name" required>
+            <input name="availableStock" type="number" min="0" placeholder="Stock" required>
+            <input name="unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" required>
+            <select name="supplierId" id="supplier-select" required></select>
+            <button type="submit">Create Part</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Create Service Order</h2>
+        <form id="order-form">
+            <select name="carId" id="car-select" required></select>
+            <select name="mechanicId" id="mechanic-select" required></select>
+            <input name="serviceName" placeholder="Service name" required>
+            <input name="description" placeholder="Description" required>
+            <input name="laborCost" type="number" min="0" step="0.01" placeholder="Labor cost" required>
+            <input name="scheduledAt" type="datetime-local" required>
+            <select name="partId" id="part-select" required></select>
+            <input name="quantity" type="number" min="1" placeholder="Part quantity" required>
+            <button type="submit">Create Order</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Receive Delivery</h2>
+        <form id="delivery-form">
+            <select name="partId" id="delivery-part-select" required></select>
+            <select name="supplierId" id="delivery-supplier-select" required></select>
+            <input name="quantity" type="number" min="1" placeholder="Delivered quantity" required>
+            <input name="deliveredAt" type="datetime-local" required>
+            <button type="submit">Update Stock</button>
+        </form>
+    </section>
+
+    <section class="card wide">
+        <div class="panel-head">
+            <h2>Service Orders</h2>
+            <button id="refresh-orders" type="button">Refresh</button>
+        </div>
+        <div id="orders-list" class="list"></div>
+    </section>
+
+    <section class="card wide">
+        <div class="panel-head">
+            <h2>Parts Inventory</h2>
+            <button id="refresh-parts" type="button">Refresh</button>
+        </div>
+        <div id="parts-list" class="list"></div>
+    </section>
+
+    <section class="card wide">
+        <h2>Activity</h2>
+        <pre id="status"></pre>
+    </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
