@@ -7,7 +7,7 @@ services:
       - 5005:5005
     environment:
       ENVIRONMENT_NAME: local
-      MONGODB_CONECTION_URL: mongodb://root:example@mongo:27017/
+      MONGODB_CONECTION_URL: mongodb://root:example@mongo:27017/?authSource=admin
     restart: always
     profiles:
       - "prod-eng-service"
@@ -45,7 +45,7 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/?authSource=admin
       ME_CONFIG_BASICAUTH_USERNAME: unibuc
       ME_CONFIG_BASICAUTH_PASSWORD: adobe
     profiles:
@@ -67,7 +67,7 @@ services:
       - "monitoring"
   mongodb-exporter:
     build: ./infrastructure/mongodb_exporter/
-    command: ./mongodb_exporter-linux-amd64 -logtostderr -mongodb.uri mongodb://root:example@mongo:27017 -groups.enabled 'asserts,durability,background_flusshing,connections,extra_info,global_lock,index_counters,network,op_counters,op_counters_repl,memory,locks,metrics'
+    command: ./mongodb_exporter-linux-amd64 -logtostderr -mongodb.uri mongodb://root:example@mongo:27017/?authSource=admin -groups.enabled 'asserts,durability,background_flusshing,connections,extra_info,global_lock,index_counters,network,op_counters,op_counters_repl,memory,locks,metrics'
     restart: always
     ports:
       - 9001:9001
