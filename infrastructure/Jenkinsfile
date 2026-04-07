@@ -76,7 +76,10 @@ pipeline {
                         docker ps -q --filter "name=prod-eng" | xargs -r docker stop
                         docker ps -q --filter "name=mongo" | xargs -r docker stop
                     '''
-                    sh 'IMAGE_TAG=${LOCAL_IMAGE} docker compose up -d prod-eng mongo'
+                    sh '''
+                        docker compose rm -sf prod-eng mongo || true
+                        IMAGE_TAG=${LOCAL_IMAGE} docker compose up -d --force-recreate prod-eng mongo
+                    '''
                     sleep 30
                 }
             }
