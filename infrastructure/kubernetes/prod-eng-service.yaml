@@ -19,7 +19,7 @@ spec:
             - name: ENVIRONMENT_NAME
               value: local
             - name: MONGODB_CONECTION_URL
-              value: mongodb://root:example@mongo:27017/?authSource=admin
+              value: mongodb://root:example@mongo:27017/?authSource=admin&authMechanism=SCRAM-SHA-256
           image: robertpoziumschi/hello-img-pipeline:v1.2.0
           name: prod-eng
           ports:
