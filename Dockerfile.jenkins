@@ -5,11 +5,11 @@ USER root
 # Install Docker CLI
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    docker.io \
-    && rm -rf /var/lib/apt/lists/*
+    docker.io && \
+    rm -rf /var/lib/apt/lists/* && \
+    chmod 666 /var/run/docker.sock 2>/dev/null || true
 
-# Add jenkins user to docker group
-RUN groupmod -g 999 docker || true && \
-    usermod -a -G docker jenkins
+# Add jenkins to docker group
+RUN usermod -aG docker jenkins || true
 
 USER jenkins
