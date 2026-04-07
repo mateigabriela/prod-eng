@@ -32,6 +32,10 @@ public class ProdEngApplication {
 
 	@PostConstruct
 	public void runAfterObjectCreated() {
+		if (System.getenv("MONGODB_CONNECTION_URL") != null || System.getenv("MONGODB_CONECTION_URL") != null) {
+			return;
+		}
+
 		if (userRepository.findByEmail("frodo@theshire.me").isEmpty()) {
 			CreateUserRequest userRequest = new CreateUserRequest("Frodo Baggins", "frodo@theshire.me");
 			userService.createUser(userRequest);
