@@ -12,7 +12,9 @@ services:
     profiles:
       - "prod-eng-service"
   jenkins:
-    image: jenkins/jenkins:jdk21
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     ports:
       - 8082:8080
       - 50000:50000
@@ -22,10 +24,8 @@ services:
     volumes:
       - ${JENKINS_CONFIG_ROOT:-/workspaces/jenkins_config}:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-    privileged: true
     profiles:
       - "prod-eng-service"
-    user: 0:0
   mongo:
     image: mongo:6.0.20
     restart: always

@@ -1,0 +1,15 @@
+FROM jenkins/jenkins:jdk21
+
+USER root
+
+# Install Docker CLI
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    docker.io \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add jenkins user to docker group
+RUN groupmod -g 999 docker || true && \
+    usermod -a -G docker jenkins
+
+USER jenkins
