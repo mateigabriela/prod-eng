@@ -22,7 +22,7 @@ services:
       - "host.docker.internal:host-gateway"
     restart: on-failure
     volumes:
-      - ${JENKINS_CONFIG_ROOT:-/workspaces/jenkins_config}:/var/jenkins_home
+      - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     profiles:
       - "prod-eng-service"
@@ -141,3 +141,6 @@ services:
       driver: loki
       options:
         loki-url: "http://loki:3100/loki/api/v1/push"
+
+volumes:
+  jenkins_home:
