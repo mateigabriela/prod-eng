@@ -113,7 +113,7 @@ pipeline {
 
         stage('Integration Tests') {
             steps {
-                sh 'MONGODB_CONECTION_URL=mongodb://root:example@host.docker.internal:27017/?authSource=admin&authMechanism=SCRAM-SHA-256 ./gradlew testIT'
+                sh './gradlew testIT'
             }
         }
 
