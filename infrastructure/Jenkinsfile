@@ -83,7 +83,7 @@ pipeline {
                         # Wait until MongoDB accepts root/example authentication.
                         for i in $(seq 1 30); do
                             MONGO_CID=$(docker compose ps -q mongo)
-                            if [ -n "$MONGO_CID" ] && docker exec "$MONGO_CID" mongosh --quiet --eval "db.getSiblingDB('admin').auth('root','example')" | grep -q "ok: 1\|1"; then
+                            if [ -n "$MONGO_CID" ] && docker exec "$MONGO_CID" mongosh --quiet --eval "db.getSiblingDB('admin').auth('root','example')" | grep -q "ok: 1"; then
                                 echo "MongoDB is ready"
                                 break
                             fi
