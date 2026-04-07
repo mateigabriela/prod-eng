@@ -2,6 +2,7 @@ package ro.unibuc.prodeng.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,6 +30,7 @@ import ro.unibuc.prodeng.repository.CarRepository;
 import ro.unibuc.prodeng.repository.ClientRepository;
 import ro.unibuc.prodeng.repository.MechanicRepository;
 import ro.unibuc.prodeng.repository.PartRepository;
+import ro.unibuc.prodeng.repository.ServiceAppointmentRepository;
 import ro.unibuc.prodeng.repository.ServiceOrderRepository;
 import ro.unibuc.prodeng.repository.SupplierRepository;
 
@@ -59,8 +61,12 @@ class AutoServiceIntegrationTest extends IntegrationTestBase {
     @Autowired
     private SupplierRepository supplierRepository;
 
+        @Autowired
+        private ServiceAppointmentRepository serviceAppointmentRepository;
+
     @BeforeEach
     void cleanUp() {
+                serviceAppointmentRepository.deleteAll();
         serviceOrderRepository.deleteAll();
         partRepository.deleteAll();
         carRepository.deleteAll();
@@ -167,6 +173,36 @@ class AutoServiceIntegrationTest extends IntegrationTestBase {
         PartEntity unchangedPart = partRepository.findById("part-1").orElseThrow();
         assertEquals(1, unchangedPart.availableStock());
         assertTrue(serviceOrderRepository.findAll().isEmpty());
+    }
+
+    @Test
+    void createAppointment_andGetByMechanic_shouldWork() throws Exception {
+        seedCatalog(10);
+
+        String appointmentPayload = """
+                {
+                  "carId": "car-1",
+                  "mechanicId": "mechanic-1",
+                  "scheduledAt": "2027-01-10T10:30:00",
+                                                                        "reasons": ["ENGINE_DIAGNOSTIC", "OIL_CHANGE"]
+                }
+                """;
+
+        mockMvc.perform(post("/api/appointments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(appointmentPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.carId").value("car-1"))
+                .andExpect(jsonPath("$.mechanicId").value("mechanic-1"))
+                .andExpect(jsonPath("$.reasons[0]").value("ENGINE_DIAGNOSTIC"))
+                .andExpect(jsonPath("$.reasons[1]").value("OIL_CHANGE"))
+                .andExpect(jsonPath("$.estimatedDurationMinutes").value(105))
+                .andExpect(jsonPath("$.estimatedEndAt").value("2027-01-10T12:15:00"));
+
+        mockMvc.perform(get("/api/appointments/by-mechanic/mechanic-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].carId").value("car-1"))
+                .andExpect(jsonPath("$[0].mechanicId").value("mechanic-1"));
     }
 
     private void seedCatalog(int partStock) {

@@ -197,3 +197,17 @@ Content-Type: application/json
     "quantity": 15,
     "deliveredAt": "2026-03-05T08:30:00"
 }
+
+### Create service appointment
+POST http://localhost:8080/api/appointments
+Content-Type: application/json
+
+{
+    "carId": "{{createCar.response.body.id}}",
+    "mechanicId": "{{createMechanic.response.body.id}}",
+    "scheduledAt": "2027-01-10T10:30:00",
+    "reasons": ["ENGINE_DIAGNOSTIC", "OIL_CHANGE"]
+}
+
+### Get appointments by mechanic
+GET http://localhost:8080/api/appointments/by-mechanic/{{createMechanic.response.body.id}}

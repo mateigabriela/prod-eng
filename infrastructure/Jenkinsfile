@@ -1,14 +1,113 @@
 pipeline {
     agent any
+
+    tools {
+        jdk 'jdk21'
+        gradle 'gradle-8'
+    }
+
     environment {
-        DOCKER_PASSWORD = credentials("docker_password")
+        IMAGE_NAME = 'prod-eng-img'
+        PUSH_TO_DOCKER_HUB = 'false'
     }
 
     stages {
-        stage('Build & Test') {
+        stage('Build') {
             steps {
-                sh './gradlew clean build'
+                sh './gradlew clean compileJava'
             }
+        }
+
+        stage('Test') {
+            steps {
+                sh './gradlew test'
+            }
+        }
+
+        stage('Version') {
+            steps {
+                script {
+                    def latestTag = sh(script: "git tag --sort=v:refname | tail -n 1", returnStdout: true).trim()
+                    if (!latestTag) {
+                        latestTag = '0.0.0'
+                    }
+
+                    def parts = latestTag.tokenize('.')
+                    if (parts.size() != 3) {
+                        error("Tag format invalid: ${latestTag}. Expected MAJOR.MINOR.PATCH")
+                    }
+
+                    def major = parts[0].toInteger()
+                    def minor = parts[1].toInteger() + 1
+                    def patch = parts[2].toInteger()
+
+                    env.IMAGE_TAG = "${major}.${minor}.${patch}"
+                    env.LOCAL_IMAGE = "${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+
+                    echo "New image tag: ${env.IMAGE_TAG}"
+                    echo "Local image reference: ${env.LOCAL_IMAGE}"
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t ${LOCAL_IMAGE} .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            when {
+                environment name: 'PUSH_TO_DOCKER_HUB', value: 'true'
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker_password', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    sh 'docker tag ${LOCAL_IMAGE} ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
+                    sh 'echo "$DOCKER_HUB_PASSWORD" | docker login docker.io -u "$DOCKER_HUB_USERNAME" --password-stdin'
+                    sh 'docker push ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}'
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                script {
+                    sh '''
+                        docker ps -q --filter "name=prod-eng" | xargs -r docker stop
+                        docker ps -q --filter "name=mongo" | xargs -r docker stop
+                    '''
+                    sh 'IMAGE_TAG=${LOCAL_IMAGE} docker compose up -d prod-eng mongo'
+                    sleep 30
+                }
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                sh 'MONGODB_CONECTION_URL=mongodb://root:example@host.docker.internal:27017/ ./gradlew testIT'
+            }
+        }
+
+        stage('Tag') {
+            steps {
+                sh 'git tag -f ${IMAGE_TAG}'
+                sh 'git tag --list ${IMAGE_TAG}'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit '**/build/test-results/**/*.xml'
+            publishHTML([
+                allowMissing: true,
+                alwaysLinkToLastBuild: false,
+                keepAll: true,
+                reportDir: 'build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: 'Test Report'
+            ])
+            sh 'docker logout || true'
         }
     }
 }

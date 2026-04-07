@@ -1,7 +1,6 @@
 services:
   prod-eng:
-    image: prod-eng-img
-    build: .
+    image: ${IMAGE_TAG:-prod-eng-img}
     ports:
       - 8080:8080
       # Port for debug
@@ -17,9 +16,11 @@ services:
     ports:
       - 8082:8080
       - 50000:50000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: on-failure
     volumes:
-      - /workspaces/jenkins_config:/var/jenkins_home
+      - ${JENKINS_CONFIG_ROOT:-/workspaces/jenkins_config}:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
       - ./Dockerfile:/Dockerfile
