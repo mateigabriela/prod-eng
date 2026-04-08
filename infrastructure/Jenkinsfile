@@ -77,8 +77,8 @@ pipeline {
                         docker ps -q --filter "name=mongo" | xargs -r docker stop
                     '''
                     sh '''
-                        docker compose rm -sf prod-eng mongo || true
-                        IMAGE_TAG=${LOCAL_IMAGE} docker compose up -d --force-recreate prod-eng mongo
+                        docker compose rm -sfv prod-eng mongo || true
+                        IMAGE_TAG=${LOCAL_IMAGE} docker compose up -d --force-recreate --renew-anon-volumes prod-eng mongo
 
                         # Wait until MongoDB accepts root/example authentication.
                         for i in $(seq 1 30); do
