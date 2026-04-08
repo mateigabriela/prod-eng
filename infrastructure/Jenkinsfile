@@ -114,7 +114,8 @@ pipeline {
         stage('Integration Tests') {
             steps {
                 withEnv([
-                    'MONGODB_CONNECTION_URL=',
+                    'IT_USE_EXTERNAL_MONGO=true',
+                    'MONGODB_CONNECTION_URL=mongodb://root:example@host.docker.internal:27017/?authSource=admin&authMechanism=SCRAM-SHA-256',
                     'MONGODB_CONECTION_URL=',
                     'MONGODB_DATABASE_NAME=autoservice_it'
                 ]) {

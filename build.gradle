@@ -92,9 +92,6 @@ jacocoTestReport {
 task testIT(type: Test) {
 	outputs.dir snippetsDir
 	outputs.upToDateWhen { false }
-	environment 'MONGODB_CONNECTION_URL', ''
-	environment 'MONGODB_CONECTION_URL', ''
-	environment 'IT_USE_EXTERNAL_MONGO', 'false'
 
 	useJUnitPlatform {
 		includeTags "IntegrationTest"
