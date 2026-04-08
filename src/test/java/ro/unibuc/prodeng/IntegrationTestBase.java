@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @Tag("IntegrationTest")
 public abstract class IntegrationTestBase {
-    private static final String MONGO_ENV_URL = resolveMongoEnvUrl();
+    private static final String EXTERNAL_MONGO_URL = resolveExternalMongoUrl();
 
     private static final MongoDBContainer mongoDBContainer =
             new MongoDBContainer("mongo:6.0.20")
@@ -25,8 +25,8 @@ public abstract class IntegrationTestBase {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        if (MONGO_ENV_URL != null) {
-            registry.add("mongodb.connection.url", () -> MONGO_ENV_URL);
+        if (EXTERNAL_MONGO_URL != null) {
+            registry.add("mongodb.connection.url", () -> EXTERNAL_MONGO_URL);
             return;
         }
 
@@ -37,14 +37,19 @@ public abstract class IntegrationTestBase {
             registry.add("mongodb.connection.url", mongoDBContainer::getReplicaSetUrl);
         } catch (Exception ex) {
             throw new IllegalStateException(
-                    "Cannot configure MongoDB for integration tests. Set MONGODB_CONNECTION_URL (or MONGODB_CONECTION_URL) " +
-                            "or make sure Docker is available for Testcontainers.",
+                    "Cannot configure MongoDB for integration tests. Make sure Docker is available for Testcontainers " +
+                            "or set IT_USE_EXTERNAL_MONGO=true together with MONGODB_CONNECTION_URL.",
                     ex
             );
         }
     }
 
-    private static String resolveMongoEnvUrl() {
+    private static String resolveExternalMongoUrl() {
+        String useExternalMongo = System.getenv("IT_USE_EXTERNAL_MONGO");
+        if (useExternalMongo == null || !Boolean.parseBoolean(useExternalMongo)) {
+            return null;
+        }
+
         String correctName = System.getenv("MONGODB_CONNECTION_URL");
         if (correctName != null && !correctName.isBlank()) {
             return correctName;
