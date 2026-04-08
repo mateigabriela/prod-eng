@@ -17,23 +17,44 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @Tag("IntegrationTest")
 public abstract class IntegrationTestBase {
+    private static final String MONGO_ENV_URL = resolveMongoEnvUrl();
+
     private static final MongoDBContainer mongoDBContainer =
             new MongoDBContainer("mongo:6.0.20")
-                    .withExposedPorts(27017)
-                    .withSharding()
                     .withLabel("ro.unibuc.prodeng", "integration-test-mongo");
-
-    static {
-        if (System.getenv("MONGODB_CONECTION_URL") == null) {
-            mongoDBContainer.start();
-        }
-    }
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        if (mongoDBContainer.isRunning()) {
-            String mongoUrl = "mongodb://localhost:" + mongoDBContainer.getMappedPort(27017);
-            registry.add("mongodb.connection.url", () -> mongoUrl);
+        if (MONGO_ENV_URL != null) {
+            registry.add("mongodb.connection.url", () -> MONGO_ENV_URL);
+            return;
         }
+
+        try {
+            if (!mongoDBContainer.isRunning()) {
+                mongoDBContainer.start();
+            }
+            registry.add("mongodb.connection.url", mongoDBContainer::getReplicaSetUrl);
+        } catch (Exception ex) {
+            throw new IllegalStateException(
+                    "Cannot configure MongoDB for integration tests. Set MONGODB_CONNECTION_URL (or MONGODB_CONECTION_URL) " +
+                            "or make sure Docker is available for Testcontainers.",
+                    ex
+            );
+        }
+    }
+
+    private static String resolveMongoEnvUrl() {
+        String correctName = System.getenv("MONGODB_CONNECTION_URL");
+        if (correctName != null && !correctName.isBlank()) {
+            return correctName;
+        }
+
+        String legacyTypoName = System.getenv("MONGODB_CONECTION_URL");
+        if (legacyTypoName != null && !legacyTypoName.isBlank()) {
+            return legacyTypoName;
+        }
+
+        return null;
     }
 }
