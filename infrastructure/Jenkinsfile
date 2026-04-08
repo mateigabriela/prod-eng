@@ -113,7 +113,13 @@ pipeline {
 
         stage('Integration Tests') {
             steps {
-                sh './gradlew testIT'
+                withEnv([
+                    'MONGODB_CONNECTION_URL=',
+                    'MONGODB_CONECTION_URL=',
+                    'MONGODB_DATABASE_NAME=autoservice_it'
+                ]) {
+                    sh './gradlew testIT'
+                }
             }
         }
 
